@@ -11,7 +11,10 @@ import SwiftUI
 struct GlasscastApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                OnboardingView()
+            }
         }
     }
 }
+
