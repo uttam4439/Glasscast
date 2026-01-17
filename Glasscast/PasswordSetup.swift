@@ -13,11 +13,13 @@ struct PasswordSetupView: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var errorMessage: String?
+    @State private var isLoading = false
+    @State private var goToHome = false
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack {
 
-            Text("Set your password")
+            Text("Create a password")
                 .font(.largeTitle.bold())
 
             SecureField("Password", text: $password)
@@ -28,35 +30,55 @@ struct PasswordSetupView: View {
                     .foregroundColor(.red)
             }
 
-            Button("Create Account") {
+            Button {
                 setPassword()
+            } label: {
+                Text(isLoading ? "Setting..." : "Set Password")
+                    .frame(maxWidth: .infinity)
+                    .padding()
             }
-            .disabled(!isPasswordValid)
+            .background(isPasswordValid ? Color.blue : Color.gray)
+            .foregroundColor(.white)
+            .clipShape(Capsule())
+            .disabled(!isPasswordValid || isLoading)
+
+            Spacer()
         }
         .padding()
+        .navigationDestination(isPresented: $goToHome) {
+            ContentView()  // your app main screen
+        }
     }
 
     private var isPasswordValid: Bool {
         password == confirmPassword &&
         password.range(
-            of: #"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,15}$"#,
+            of: #"^(?=.*\d)(?=.*[@$!%*?&]).{8,}$"#,
             options: .regularExpression
         ) != nil
     }
 
     private func setPassword() {
+        isLoading = true
+        errorMessage = nil
+
         Task {
             do {
                 try await SupabaseKey.supaBase.auth.update(
                     user: UserAttributes(password: password)
                 )
-                print("✅ Account created")
+
+                // ✅ USER IS NOW FULLY SIGNED UP & LOGGED IN
+                goToHome = true
+
             } catch {
                 errorMessage = error.localizedDescription
             }
+            isLoading = false
         }
     }
 }
+
 
 #Preview {
     PasswordSetupView()

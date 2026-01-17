@@ -20,6 +20,7 @@ struct SignupDetailsView: View {
     private func sendOTP() {
         isSendingOTP = true
         errorMessage = nil
+        
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedName = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedLocation = location.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -42,9 +43,22 @@ struct SignupDetailsView: View {
             return
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+        // ✅ REAL SUPABASE OTP CALL
+        Task {
+            do {
+                try await SupabaseKey.supaBase.auth.signInWithOTP(
+                    email: trimmedEmail,
+                    shouldCreateUser: true
+                )
+                
+                // ✅ Navigate ONLY after OTP is sent
+                goToOTP = true
+                
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            
             isSendingOTP = false
-            goToOTP = true
         }
     }
     
