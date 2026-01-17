@@ -12,6 +12,7 @@
 		B7FA73822F1BAB7A001A0884 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = B7FA73812F1BAB7A001A0884 /* PostgREST */; };
 		B7FA73842F1BAB7A001A0884 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = B7FA73832F1BAB7A001A0884 /* Realtime */; };
 		B7FA73862F1BAB7A001A0884 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = B7FA73852F1BAB7A001A0884 /* Storage */; };
+		B7FA73FA2F1BF409001A0884 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B7FA73F92F1BF409001A0884 /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 			files = (
 				B7FA73822F1BAB7A001A0884 /* PostgREST in Frameworks */,
 				B7FA73802F1BAB7A001A0884 /* Functions in Frameworks */,
+				B7FA73FA2F1BF409001A0884 /* Supabase in Frameworks */,
 				B7FA737E2F1BAB7A001A0884 /* Auth in Frameworks */,
 				B7FA73862F1BAB7A001A0884 /* Storage in Frameworks */,
 				B7FA73842F1BAB7A001A0884 /* Realtime in Frameworks */,
@@ -90,6 +92,7 @@
 				B7FA73812F1BAB7A001A0884 /* PostgREST */,
 				B7FA73832F1BAB7A001A0884 /* Realtime */,
 				B7FA73852F1BAB7A001A0884 /* Storage */,
+				B7FA73F92F1BF409001A0884 /* Supabase */,
 			);
 			productName = Glasscast;
 			productReference = B7FA736B2F1B9BF4001A0884 /* Glasscast.app */;
@@ -397,6 +400,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B7FA737C2F1BAB7A001A0884 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Storage;
+		};
+		B7FA73F92F1BF409001A0884 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7FA737C2F1BAB7A001A0884 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
