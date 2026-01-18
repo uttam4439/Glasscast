@@ -10,11 +10,15 @@ import MapKit
 
 struct WeatherHomeView: View {
     @EnvironmentObject var appState: AppState
+    @StateObject var locationManager = LocationManager()
+    var weatherManager = WeatherManager()
+    @State var weather: ResponseBody?
+    @State var forecast: ForecastResponseBody?
     @State private var showProfile = false
     
     var body: some View {
         ZStack {
-            // Background
+            // Background depending on weather?? For now keep gradient or make realistic
             LinearGradient(
                 colors: [
                     Color(red: 0.12, green: 0.47, blue: 0.83),
@@ -38,6 +42,9 @@ struct WeatherHomeView: View {
                             Image(systemName: "line.3.horizontal")
                             Spacer()
                             Image(systemName: "arrow.clockwise")
+                                .onTapGesture {
+                                    locationManager.requestLocation()
+                                }
                             Spacer()
                             Button {
                                 showProfile = true
@@ -51,57 +58,125 @@ struct WeatherHomeView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 40) // Extra padding for notch if safe area isn't enough
                         
-                        // MARK: - City
-                        Text("New York")
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundColor(.white)
-                        
-                        // MARK: - Temperature
-                        VStack(spacing: 8) {
-                            Text("72°")
-                                .font(.system(size: 96, weight: .thin))
+                        if let weather = weather {
+                            // MARK: - City
+                            Text(weather.name)
+                                .font(.system(size: 22, weight: .medium))
                                 .foregroundColor(.white)
                             
-                            Text("Partly Cloudy")
-                                .font(.system(size: 22))
-                                .foregroundColor(.white.opacity(0.9))
+                            // MARK: - Temperature
+                            VStack(spacing: 8) {
+                                Text("\(Int(weather.main.temp))°")
+                                    .font(.system(size: 96, weight: .thin))
+                                    .foregroundColor(.white)
+                                
+                                Text(weather.weather[0].main)
+                                    .font(.system(size: 22))
+                                    .foregroundColor(.white.opacity(0.9))
+                                
+                                Text("H:\(Int(weather.main.tempMax))°  L:\(Int(weather.main.tempMin))°")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white.opacity(0.8))
+                            }
                             
-                            Text("H:78°  L:64°")
-                                .font(.system(size: 18))
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-                        
-                        // MARK: - Forecast
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("5-DAY FORECAST")
-                                .font(.caption.weight(.semibold))
-                                .foregroundColor(.white.opacity(0.7))
-                                .padding(.horizontal, 24)
-                            
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 16) {
-                                    ForecastCard(day: "MON", icon: "cloud.sun.fill", temp: "75°", low: "62°")
-                                    ForecastCard(day: "TUE", icon: "cloud.rain.fill", temp: "68°", low: "58°")
-                                    ForecastCard(day: "WED", icon: "sun.max.fill", temp: "80°", low: "65°")
-                                    ForecastCard(day: "THU", icon: "cloud.bolt.fill", temp: "73°", low: "60°")
+                            // MARK: - Forecast
+                            if let forecast = forecast {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("5-DAY FORECAST")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .padding(.horizontal, 24)
+                                    
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 16) {
+                                            ForEach(filterForecast(forecast.list)) { item in
+                                                ForecastCard(
+                                                    day: getDayName(from: item.dt),
+                                                    icon: mapIcon(item.weather.first?.icon ?? ""),
+                                                    temp: "\(Int(item.main.tempMax))°",
+                                                    low: "\(Int(item.main.tempMin))°"
+                                                )
+                                            }
+                                        }
+                                        .padding(.horizontal, 24)
+                                    }
                                 }
+                            }
+                            
+                            // MARK: - Details Grid
+                             VStack(alignment: .leading, spacing: 12) {
+                                Text("DETAILS")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .padding(.horizontal, 24)
+                                
+                                HStack(spacing: 20) {
+                                    VStack(alignment: .leading) {
+                                        Text("Humidity")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.7))
+                                        Text("\(Int(weather.main.humidity))%")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text("Wind")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.7))
+                                        Text("\(Int(weather.wind.speed)) m/s")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text("Feels Like")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.7))
+                                        Text("\(Int(weather.main.feelsLike))°")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                    }
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .padding(.horizontal, 24)
+
+                            }
+
+                             // MARK: - Weather Summary
+                            InfoCard {
+                                Text("Current conditions: \(weather.weather[0].description.capitalized). The pressure is \(Int(weather.main.pressure)) hPa.")
+                                    .foregroundColor(.white.opacity(0.9))
+                                    .font(.system(size: 16))
+                            }
+                            
+                        } else {
+                            if locationManager.isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                                    .padding(.top, 100)
+                            } else {
+                                Button("Enable Location to see weather") {
+                                    locationManager.requestLocation()
+                                }
+                                .padding(.top, 100)
+                                .foregroundColor(.white)
                             }
                         }
-                        
-                        // MARK: - Weather Summary
-                        InfoCard {
-                            Text("Expect scattered clouds today with a light breeze from the East. Temperatures will remain mild through the evening.")
-                                .foregroundColor(.white.opacity(0.9))
-                                .font(.system(size: 16))
-                        }
+                       
                         
                         // MARK: - Map Card
                         InfoCard {
                             VStack(spacing: 16) {
                                 Map(coordinateRegion: .constant(
                                     MKCoordinateRegion(
-                                        center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+                                        center: weather?.coord != nil ? CLLocationCoordinate2D(latitude: weather!.coord.lat, longitude: weather!.coord.lon) : CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
                                         span: MKCoordinateSpan(latitudeDelta: 0.3, longitudeDelta: 0.3)
                                     )
                                 ))
@@ -124,6 +199,9 @@ struct WeatherHomeView: View {
                         
                         Spacer(minLength: 80) // Space for bottom bar
                     }
+                }
+                .refreshable {
+                    locationManager.requestLocation()
                 }
                 
                 // MARK: - Bottom Bar (Fixed)
@@ -149,6 +227,69 @@ struct WeatherHomeView: View {
             .sheet(isPresented: $showProfile) {
                 ProfileView()
             }
+        }
+        .onAppear {
+             if weather == nil {
+                 locationManager.requestLocation()
+             }
+        }
+        .onChange(of: locationManager.location) { newLocation in
+            if let location = newLocation {
+                Task {
+                    do {
+                         weather = try await weatherManager.getCurrentWeather(latitude: location.latitude, longitude: location.longitude)
+                         forecast = try await weatherManager.getForecast(latitude: location.latitude, longitude: location.longitude)
+                    } catch {
+                        print("Error getting weather: \(error)")
+                    }
+                }
+            }
+        }
+    }
+    
+    // Helper to filter forecast to get one per day (simplified)
+    func filterForecast(_ list: [ForecastResponseBody.ForecastItem]) -> [ForecastResponseBody.ForecastItem] {
+        // Just take every 8th item (24 hours / 3 hours = 8) to approximate daily info
+        // Or better: Group by day and take noon
+        // For simplicity in this demo:
+        var daily: [ForecastResponseBody.ForecastItem] = []
+        let calendar = Calendar.current
+        var seenDays = Set<Int>()
+        
+        for item in list {
+            let date = Date(timeIntervalSince1970: item.dt)
+            let day = calendar.component(.day, from: date)
+            if !seenDays.contains(day) {
+                seenDays.insert(day)
+                daily.append(item)
+                if daily.count >= 5 { break }
+            }
+        }
+        return daily
+    }
+    
+    func getDayName(from timestamp: Double) -> String {
+        let date = Date(timeIntervalSince1970: timestamp)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE" // Mon, Tue
+        return formatter.string(from: date).uppercased()
+    }
+    
+    func mapIcon(_ icon: String) -> String {
+        // Simple mapping from OpenWeatherMap icon codes to SF Symbols
+        switch icon {
+        case "01d": return "sun.max.fill"
+        case "01n": return "moon.stars.fill"
+        case "02d", "03d": return "cloud.sun.fill"
+        case "02n", "03n": return "cloud.moon.fill"
+        case "04d", "04n": return "cloud.fill"
+        case "09d", "09n": return "cloud.drizzle.fill"
+        case "10d": return "cloud.sun.rain.fill"
+        case "10n": return "cloud.moon.rain.fill"
+        case "11d", "11n": return "cloud.bolt.fill"
+        case "13d", "13n": return "snowflake"
+        case "50d", "50n": return "cloud.fog.fill"
+        default: return "cloud.fill"
         }
     }
     
