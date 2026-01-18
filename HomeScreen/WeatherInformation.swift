@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import Supabase
 
 struct WeatherHomeView: View {
     @EnvironmentObject var appState: AppState
@@ -15,6 +16,7 @@ struct WeatherHomeView: View {
     @State var weather: ResponseBody?
     @State var forecast: ForecastResponseBody?
     @State private var showProfile = false
+    @State private var isCelsius = true
     @State private var selectedTab = 0
     
     var body: some View {
@@ -43,12 +45,18 @@ struct WeatherHomeView: View {
                                 
                                 // MARK: - Top Bar
                                 HStack {
-                                    Image(systemName: "line.3.horizontal")
-                                    Spacer()
-                                    Image(systemName: "arrow.clockwise")
-                                        .onTapGesture {
-                                            locationManager.requestLocation()
+                                    Button {
+                                        withAnimation {
+                                            isCelsius.toggle()
                                         }
+                                    } label: {
+                                        Text(isCelsius ? "°C" : "°F")
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .padding(8)
+                                            .background(.ultraThinMaterial)
+                                            .clipShape(Circle())
+                                    }
                                     Spacer()
                                     Button {
                                         showProfile = true
@@ -70,7 +78,7 @@ struct WeatherHomeView: View {
                                     
                                     // MARK: - Temperature
                                     VStack(spacing: 8) {
-                                        Text("\(Int(weather.main.temp))°")
+                                        Text("\(convert(weather.main.temp))°")
                                             .font(.system(size: 96, weight: .thin))
                                             .foregroundColor(.white)
                                         
@@ -78,7 +86,7 @@ struct WeatherHomeView: View {
                                             .font(.system(size: 22))
                                             .foregroundColor(.white.opacity(0.9))
                                         
-                                        Text("H:\(Int(weather.main.tempMax))°  L:\(Int(weather.main.tempMin))°")
+                                        Text("H:\(convert(weather.main.tempMax))°  L:\(convert(weather.main.tempMin))°")
                                             .font(.system(size: 18))
                                             .foregroundColor(.white.opacity(0.8))
                                     }
@@ -97,8 +105,8 @@ struct WeatherHomeView: View {
                                                         ForecastCard(
                                                             day: getDayName(from: item.dt),
                                                             icon: mapIcon(item.weather.first?.icon ?? ""),
-                                                            temp: "\(Int(item.main.tempMax))°",
-                                                            low: "\(Int(item.main.tempMin))°"
+                                                            temp: "\(convert(item.main.tempMax))°",
+                                                            low: "\(convert(item.main.tempMin))°"
                                                         )
                                                     }
                                                 }
@@ -139,7 +147,7 @@ struct WeatherHomeView: View {
                                                 Text("Feels Like")
                                                     .font(.caption)
                                                     .foregroundColor(.white.opacity(0.7))
-                                                Text("\(Int(weather.main.feelsLike))°")
+                                                Text("\(convert(weather.main.feelsLike))°")
                                                     .font(.title2)
                                                     .fontWeight(.bold)
                                                     .foregroundColor(.white)
@@ -217,7 +225,7 @@ struct WeatherHomeView: View {
             // MARK: - Bottom Bar (Fixed)
             VStack {
                 Spacer()
-                HStack {
+                HStack(spacing: 64) {
                     Button {
                         withAnimation { selectedTab = 0 }
                     } label: {
@@ -225,19 +233,6 @@ struct WeatherHomeView: View {
                             .symbolVariant(selectedTab == 0 ? .fill : .none)
                             .foregroundColor(selectedTab == 0 ? .white : .white.opacity(0.5))
                     }
-                    
-                    Spacer()
-                    
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(selectedTab == 0 ? .white : .white.opacity(0.3))
-                            .frame(width: 8, height: 8)
-                        Circle()
-                            .fill(selectedTab == 1 ? .white : .white.opacity(0.3))
-                            .frame(width: 8, height: 8)
-                    }
-                    
-                    Spacer()
                     
                     Button {
                         withAnimation { selectedTab = 1 }
@@ -247,13 +242,12 @@ struct WeatherHomeView: View {
                             .foregroundColor(selectedTab == 1 ? .white : .white.opacity(0.5))
                     }
                 }
-                .font(.system(size: 22))
-                .padding(.horizontal, 48) // Adjust spacing
+                .font(.system(size: 24))
+                .padding(.horizontal, 32)
                 .padding(.vertical, 16)
                 .background(.ultraThinMaterial)
                 .clipShape(Capsule())
                 .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-                .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
         }
@@ -276,6 +270,15 @@ struct WeatherHomeView: View {
                     }
                 }
             }
+        }
+    }
+    
+    // Helper to convert temperature
+    func convert(_ temp: Double) -> Int {
+        if isCelsius {
+            return Int(temp)
+        } else {
+            return Int(temp * 9/5 + 32)
         }
     }
     
@@ -394,6 +397,26 @@ struct WeatherHomeView: View {
                         .padding(.horizontal, 24)
                         
                         Spacer()
+                        
+                        Button {
+                            Task {
+                                try? await SupabaseKey.supaBase.auth.signOut()
+                                await MainActor.run {
+                                    appState.flow = .onboarding
+                                    dismiss()
+                                }
+                            }
+                        } label: {
+                            Text("Sign Out")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(Color.red.opacity(0.8))
+                                .cornerRadius(12)
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 24)
                     }
                 }
                 .navigationTitle("Profile")
