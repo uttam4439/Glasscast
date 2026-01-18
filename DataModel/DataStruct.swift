@@ -58,3 +58,37 @@ struct ResponseBody: Decodable {
         var sunset: Int
     }
 }
+
+extension ResponseBody.MainResponse {
+    var feelsLike: Double { return feels_like }
+    var tempMin: Double { return temp_min }
+    var tempMax: Double { return temp_max }
+}
+
+// Model for 5-Day Forecast
+struct ForecastResponseBody: Decodable {
+    var list: [ForecastItem]
+    var city: CityResponse
+    
+    struct CityResponse: Decodable {
+        var name: String
+        var country: String
+    }
+    
+    struct ForecastItem: Decodable, Identifiable {
+        let id = UUID()
+        var dt: Double
+        var main: ResponseBody.MainResponse
+        var weather: [ResponseBody.WeatherResponse]
+        var dt_txt: String
+        var sys: SysResponse
+
+        struct SysResponse: Decodable {
+            var pod: String
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case dt, main, weather, dt_txt, sys
+        }
+    }
+}
