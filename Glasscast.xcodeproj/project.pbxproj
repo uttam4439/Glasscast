@@ -20,6 +20,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B73B04A32F1C997D00894E3E /* HomeScreen */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = HomeScreen;
+			sourceTree = "<group>";
+		};
 		B7FA736D2F1B9BF4001A0884 /* Glasscast */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Glasscast;
@@ -52,6 +57,7 @@
 		B7FA73622F1B9BF4001A0884 = {
 			isa = PBXGroup;
 			children = (
+				B73B04A32F1C997D00894E3E /* HomeScreen */,
 				B7FA73872F1BAB9E001A0884 /* DataModel */,
 				B7FA736D2F1B9BF4001A0884 /* Glasscast */,
 				B7FA736C2F1B9BF4001A0884 /* Products */,
@@ -82,6 +88,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				B73B04A32F1C997D00894E3E /* HomeScreen */,
 				B7FA736D2F1B9BF4001A0884 /* Glasscast */,
 				B7FA73872F1BAB9E001A0884 /* DataModel */,
 			);
