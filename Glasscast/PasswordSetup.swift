@@ -26,6 +26,20 @@ struct PasswordSetupView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // Top Custom Navigation Bar Area
+                HStack {
+                    Button {
+                        appState.flow = .otp
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .frame(height: 44)
+
                 // Header
                 VStack(spacing: 12) {
                     Text("Create Password")

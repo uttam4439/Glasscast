@@ -23,10 +23,28 @@ struct SignupDetailsView: View {
         isSendingOTP = true
         errorMessage = nil
 
-        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         
         Task {
             do {
+                // 1. Check if email exists in profiles table
+                let response: [UserProfile] = try await SupabaseKey.supaBase
+                    .from("profiles")
+                    .select()
+                    .eq("email", value: trimmedEmail)
+                    .execute()
+                    .value
+                
+                if !response.isEmpty {
+                    // Email exists! Show popup
+                    await MainActor.run {
+                        showEmailExistsPopup = true
+                        isSendingOTP = false
+                    }
+                    return
+                }
+                
+                // 2. If not found, proceed to send magic link
                 try await SupabaseKey.supaBase.auth.signInWithOTP(
                     email: trimmedEmail,
                     shouldCreateUser: true
@@ -41,7 +59,10 @@ struct SignupDetailsView: View {
                     )
                 }
             } catch {
-                errorMessage = "Email already registered. Please sign in."
+                print("Signup error: \(error)")
+                await MainActor.run {
+                    errorMessage = "Something went wrong. Please try again."
+                }
             }
             isSendingOTP = false
         }
@@ -60,8 +81,16 @@ struct SignupDetailsView: View {
                 
                 // Top Custom Navigation Bar Area
                 HStack {
+                    Button {
+                        appState.flow = .onboarding
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
                     Spacer()
                 }
+                .padding(.horizontal, 24)
                 .frame(height: 44)
 
                 // Progress Bar

@@ -29,8 +29,19 @@ struct OTPView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Nav Spacer
-                Color.clear.frame(height: 10)
+                // Top Custom Navigation Bar Area
+                HStack {
+                    Button {
+                        appState.flow = .signup
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .frame(height: 44)
 
                 // Progress
                 VStack(spacing: 8) {
