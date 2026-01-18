@@ -16,27 +16,35 @@ struct WeatherSearchView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(red: 0.95, green: 0.96, blue: 0.98).ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.12, green: 0.47, blue: 0.83),
+                        Color(red: 0.10, green: 0.40, blue: 0.78)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                ).ignoresSafeArea()
                 
                 VStack(alignment: .leading) {
                     // Custom Header
                     Text("Weather")
                         .font(.largeTitle.weight(.bold))
+                        .foregroundColor(.white)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                     
-                    // Search Bar
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.6))
                         TextField("Search for a city or airport", text: $searchText)
+                            .foregroundColor(.white)
                             .onChange(of: searchText) { newValue in
                                 performSearch(query: newValue)
                             }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(12)
                     .padding(.horizontal, 20)
                     
                     if !searchResults.isEmpty {
@@ -46,18 +54,24 @@ struct WeatherSearchView: View {
                                 addToFavorites(city: city)
                             } label: {
                                 VStack(alignment: .leading) {
-                                    Text(city.name).font(.headline)
-                                    Text("\(city.state ?? ""), \(city.country)").font(.subheadline).foregroundColor(.gray)
+                                    Text(city.name)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                    Text("\(city.state ?? ""), \(city.country)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.7))
                                 }
                             }
+                            .listRowBackground(Color.clear)
                         }
                         .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
                     } else {
                         // Favorites List
                         if !favoritesManager.favorites.isEmpty {
                             Text("MY LOCATIONS")
                                 .font(.caption)
-                                .foregroundColor(.gray)
+                                .foregroundColor(.white.opacity(0.7))
                                 .padding(.horizontal, 20)
                                 .padding(.top, 20)
                             
@@ -75,7 +89,7 @@ struct WeatherSearchView: View {
                                  ProgressView()
                              } else {
                                 Text("No favorites added.")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(.white.opacity(0.7))
                                     .padding()
                              }
                              Spacer()
@@ -135,48 +149,44 @@ struct FavoriteWeatherCard: View {
     let weatherManager = WeatherManager()
     
     var body: some View {
-        ZStack {
-            // Card Background (Weather dependent logic could go here, defaulting to blue)
-            RoundedRectangle(cornerRadius: 24)
-                .fill(LinearGradient(colors: [Color.blue.opacity(0.8), Color.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(favorite.name)
-                        .font(.title2.weight(.bold))
-                        .foregroundColor(.white)
-                    
-                    if let weather = weather {
-                        Text(weather.weather.first?.main ?? "")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
-                        
-                        Text(getCurrentTime(timezoneOffset: weather.sys.sunrise)) // Should use timezone
-                             .font(.caption)
-                             .foregroundColor(.white.opacity(0.6))
-                    } else {
-                        Text("Loading...")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                }
-                
-                Spacer()
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(weather?.name ?? favorite.name)
+                    .font(.title2.weight(.bold))
+                    .foregroundColor(.white)
                 
                 if let weather = weather {
-                    VStack(alignment: .trailing) {
-                        Text("\(Int(weather.main.temp))°")
-                            .font(.system(size: 48, weight: .light))
-                            .foregroundColor(.white)
-                        
-                        Text("H:\(Int(weather.main.tempMax))° L:\(Int(weather.main.tempMin))°")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    }
+                    Text(weather.weather.first?.main ?? "")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                    
+                    Text(getCurrentTime(timezoneOffset: weather.sys.sunrise)) // Fixed timezone logic would go here
+                         .font(.caption)
+                         .foregroundColor(.white.opacity(0.6))
+                } else {
+                    Text("Loading...")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.6))
                 }
             }
-            .padding(20)
+            
+            Spacer()
+            
+            if let weather = weather {
+                VStack(alignment: .trailing) {
+                    Text("\(Int(weather.main.temp))°")
+                        .font(.system(size: 48, weight: .light))
+                        .foregroundColor(.white)
+                    
+                    Text("H:\(Int(weather.main.tempMax))° L:\(Int(weather.main.tempMin))°")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+            }
         }
+        .padding(20)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
         .frame(height: 120)
         .contextMenu {
             Button(role: .destructive) {
