@@ -134,3 +134,9 @@ struct GeoCity: Decodable, Identifiable {
     
     var id: String { "\(lat)-\(lon)" }
 }
+struct UserProfile: Codable {
+    var id: UUID
+    var full_name: String?
+    var email: String?
+    var location: String?
+}

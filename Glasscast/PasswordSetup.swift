@@ -113,12 +113,26 @@ struct PasswordSetupView: View {
 
         Task {
             do {
-                try await SupabaseKey.supaBase.auth.update(
+                let user = try await SupabaseKey.supaBase.auth.update(
                     user: UserAttributes(password: password)
                 )
 
+                // ✅ Insert into profiles table
+                let profile = UserProfile(
+                    id: user.id,
+                    full_name: appState.fullName,
+                    email: appState.signupEmail,
+                    location: appState.location
+                )
+                
+                try await SupabaseKey.supaBase
+                    .from("profiles")
+                    .insert(profile)
+                    .execute()
+
                 // ✅ USER IS NOW FULLY SIGNED UP & LOGGED IN
                 await MainActor.run {
+                    appState.userID = user.id
                     appState.flow = .home
                 }
             } catch {

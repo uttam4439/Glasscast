@@ -146,15 +146,24 @@ struct SignInView: View {
             do {
                 let session = try await client.auth.signIn(email: email, password: password)
                 
+                // Fetch profile
+                let profile: UserProfile = try await client
+                    .from("profiles")
+                    .select()
+                    .eq("id", value: session.user.id)
+                    .single()
+                    .execute()
+                    .value
+                
                 await MainActor.run {
-                    // Update AppState with user info if available from metadata, or just flow
-                    // For now, assuming successful login leads to home
-                    // Ideally we fetch profile
-                    appState.signupEmail = email
+                    appState.signupEmail = profile.email ?? session.user.email ?? email
+                    appState.fullName = profile.full_name ?? ""
+                    appState.location = profile.location ?? ""
                     appState.userID = session.user.id
                     appState.flow = .home
                 }
             } catch {
+                print("Sign in/Profile error: \(error)")
                 await MainActor.run {
                     errorMessage = "Invalid email or password."
                 }
