@@ -19,11 +19,13 @@ enum AppFlow {
 final class AppState: ObservableObject {
     @Published var flow: AppFlow = .onboarding
     @Published var signupEmail: String = ""
+    @Published var fullName: String = ""
+    @Published var location: String = ""
 
-
-
-    func updateSession(email: String, next: AppFlow) {
+    func updateSession(email: String, fullName: String, location: String, next: AppFlow) {
         self.signupEmail = email
+        self.fullName = fullName
+        self.location = location
         self.flow = next
     }
 }

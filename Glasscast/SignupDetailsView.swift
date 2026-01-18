@@ -33,7 +33,12 @@ struct SignupDetailsView: View {
                 )
                 
                 await MainActor.run {
-                    appState.updateSession(email: trimmedEmail, next: .otp)
+                    appState.updateSession(
+                        email: trimmedEmail,
+                        fullName: fullName,
+                        location: location,
+                        next: .otp
+                    )
                 }
             } catch {
                 errorMessage = "Email already registered. Please sign in."
@@ -44,8 +49,12 @@ struct SignupDetailsView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.94, green: 0.96, blue: 0.99) // Light pale blue background
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [Color(red: 0.94, green: 0.96, blue: 0.99), Color(red: 0.85, green: 0.88, blue: 0.95)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 
@@ -164,7 +173,7 @@ struct InputGroup: View {
             
             TextField(placeholder, text: $text)
                 .padding()
-                .background(Color.white)
+                .background(.regularMaterial)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

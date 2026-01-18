@@ -18,8 +18,12 @@ struct PasswordSetupView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.94, green: 0.96, blue: 0.99)
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [Color(red: 0.94, green: 0.96, blue: 0.99), Color(red: 0.85, green: 0.88, blue: 0.95)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header
@@ -47,7 +51,7 @@ struct PasswordSetupView: View {
                         
                         SecureField("Minimum 8 characters", text: $password)
                             .padding()
-                            .background(Color.white)
+                            .background(.regularMaterial)
                             .cornerRadius(12)
                             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1), lineWidth: 1))
                     }
@@ -61,7 +65,7 @@ struct PasswordSetupView: View {
                         
                         SecureField("Must match password", text: $confirmPassword)
                             .padding()
-                            .background(Color.white)
+                            .background(.regularMaterial)
                             .cornerRadius(12)
                             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1), lineWidth: 1))
                     }

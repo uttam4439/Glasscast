@@ -21,8 +21,12 @@ struct OTPView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.94, green: 0.96, blue: 0.99)
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [Color(red: 0.94, green: 0.96, blue: 0.99), Color(red: 0.85, green: 0.88, blue: 0.95)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Nav Spacer
@@ -70,7 +74,7 @@ struct OTPView: View {
                             .multilineTextAlignment(.center)
                             .font(.title2.weight(.bold))
                             .frame(width: 48, height: 56)
-                            .background(Color.white)
+                            .background(.regularMaterial)
                             .cornerRadius(12)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
