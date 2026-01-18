@@ -42,5 +42,22 @@ class WeatherManager {
         
         return decodedData
     }
+    // Geocoding Search
+    func searchCity(query: String) async throws -> [GeoCity] {
+        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return [] }
+        guard let url = URL(string: "https://api.openweathermap.org/geo/1.0/direct?q=\(encodedQuery)&limit=5&appid=\(apiKey)") else {
+            fatalError("Missing URL")
+        }
+        
+        let urlRequest = URLRequest(url: url)
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+            return []
+        }
+        
+        let decodedData = try JSONDecoder().decode([GeoCity].self, from: data)
+        return decodedData
+    }
 }
 

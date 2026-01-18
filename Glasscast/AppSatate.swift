@@ -14,6 +14,7 @@ enum AppFlow {
     case otp
     case password
     case home
+    case signin
 }
 
 final class AppState: ObservableObject {
@@ -21,6 +22,7 @@ final class AppState: ObservableObject {
     @Published var signupEmail: String = ""
     @Published var fullName: String = ""
     @Published var location: String = ""
+    @Published var userID: UUID?
 
     func updateSession(email: String, fullName: String, location: String, next: AppFlow) {
         self.signupEmail = email

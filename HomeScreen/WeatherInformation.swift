@@ -15,208 +15,240 @@ struct WeatherHomeView: View {
     @State var weather: ResponseBody?
     @State var forecast: ForecastResponseBody?
     @State private var showProfile = false
+    @State private var selectedTab = 0
     
     var body: some View {
         ZStack {
-            // Background depending on weather?? For now keep gradient or make realistic
-            LinearGradient(
-                colors: [
-                    Color(red: 0.12, green: 0.47, blue: 0.83),
-                    Color(red: 0.10, green: 0.40, blue: 0.78)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Main Scrollable Content
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        
-                        // Spacer for Top Safe Area / Camera Notch
-                        Color.clear.frame(height: 10)
-                        
-                        // MARK: - Top Bar
-                        HStack {
-                            Image(systemName: "line.3.horizontal")
-                            Spacer()
-                            Image(systemName: "arrow.clockwise")
-                                .onTapGesture {
-                                    locationManager.requestLocation()
+            if selectedTab == 0 {
+                // MARK: - Home View
+                ZStack {
+                    // Background depending on weather?? For now keep gradient or make realistic
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.12, green: 0.47, blue: 0.83),
+                            Color(red: 0.10, green: 0.40, blue: 0.78)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+                    
+                    VStack(spacing: 0) {
+                        // Main Scrollable Content
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 24) {
+                                
+                                // Spacer for Top Safe Area / Camera Notch
+                                Color.clear.frame(height: 10)
+                                
+                                // MARK: - Top Bar
+                                HStack {
+                                    Image(systemName: "line.3.horizontal")
+                                    Spacer()
+                                    Image(systemName: "arrow.clockwise")
+                                        .onTapGesture {
+                                            locationManager.requestLocation()
+                                        }
+                                    Spacer()
+                                    Button {
+                                        showProfile = true
+                                    } label: {
+                                        Image(systemName: "person.crop.circle")
+                                            .font(.system(size: 24)) // Slightly larger for profile
+                                    }
                                 }
-                            Spacer()
-                            Button {
-                                showProfile = true
-                            } label: {
-                                Image(systemName: "person.crop.circle")
-                                    .font(.system(size: 24)) // Slightly larger for profile
-                            }
-                        }
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 40) // Extra padding for notch if safe area isn't enough
-                        
-                        if let weather = weather {
-                            // MARK: - City
-                            Text(weather.name)
-                                .font(.system(size: 22, weight: .medium))
+                                .font(.system(size: 20, weight: .medium))
                                 .foregroundColor(.white)
-                            
-                            // MARK: - Temperature
-                            VStack(spacing: 8) {
-                                Text("\(Int(weather.main.temp))°")
-                                    .font(.system(size: 96, weight: .thin))
-                                    .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.top, 40) // Extra padding for notch if safe area isn't enough
                                 
-                                Text(weather.weather[0].main)
-                                    .font(.system(size: 22))
-                                    .foregroundColor(.white.opacity(0.9))
-                                
-                                Text("H:\(Int(weather.main.tempMax))°  L:\(Int(weather.main.tempMin))°")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(.white.opacity(0.8))
-                            }
-                            
-                            // MARK: - Forecast
-                            if let forecast = forecast {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("5-DAY FORECAST")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundColor(.white.opacity(0.7))
-                                        .padding(.horizontal, 24)
+                                if let weather = weather {
+                                    // MARK: - City
+                                    Text(weather.name)
+                                        .font(.system(size: 22, weight: .medium))
+                                        .foregroundColor(.white)
                                     
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 16) {
-                                            ForEach(filterForecast(forecast.list)) { item in
-                                                ForecastCard(
-                                                    day: getDayName(from: item.dt),
-                                                    icon: mapIcon(item.weather.first?.icon ?? ""),
-                                                    temp: "\(Int(item.main.tempMax))°",
-                                                    low: "\(Int(item.main.tempMin))°"
-                                                )
+                                    // MARK: - Temperature
+                                    VStack(spacing: 8) {
+                                        Text("\(Int(weather.main.temp))°")
+                                            .font(.system(size: 96, weight: .thin))
+                                            .foregroundColor(.white)
+                                        
+                                        Text(weather.weather[0].main)
+                                            .font(.system(size: 22))
+                                            .foregroundColor(.white.opacity(0.9))
+                                        
+                                        Text("H:\(Int(weather.main.tempMax))°  L:\(Int(weather.main.tempMin))°")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(.white.opacity(0.8))
+                                    }
+                                    
+                                    // MARK: - Forecast
+                                    if let forecast = forecast {
+                                        VStack(alignment: .leading, spacing: 12) {
+                                            Text("5-DAY FORECAST")
+                                                .font(.caption.weight(.semibold))
+                                                .foregroundColor(.white.opacity(0.7))
+                                                .padding(.horizontal, 24)
+                                            
+                                            ScrollView(.horizontal, showsIndicators: false) {
+                                                HStack(spacing: 16) {
+                                                    ForEach(filterForecast(forecast.list)) { item in
+                                                        ForecastCard(
+                                                            day: getDayName(from: item.dt),
+                                                            icon: mapIcon(item.weather.first?.icon ?? ""),
+                                                            temp: "\(Int(item.main.tempMax))°",
+                                                            low: "\(Int(item.main.tempMin))°"
+                                                        )
+                                                    }
+                                                }
+                                                .padding(.horizontal, 24)
                                             }
                                         }
+                                    }
+                                    
+                                    // MARK: - Details Grid
+                                     VStack(alignment: .leading, spacing: 12) {
+                                        Text("DETAILS")
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundColor(.white.opacity(0.7))
+                                            .padding(.horizontal, 24)
+                                        
+                                        HStack(spacing: 20) {
+                                            VStack(alignment: .leading) {
+                                                Text("Humidity")
+                                                    .font(.caption)
+                                                    .foregroundColor(.white.opacity(0.7))
+                                                Text("\(Int(weather.main.humidity))%")
+                                                    .font(.title2)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.white)
+                                            }
+                                            
+                                            VStack(alignment: .leading) {
+                                                Text("Wind")
+                                                    .font(.caption)
+                                                    .foregroundColor(.white.opacity(0.7))
+                                                Text("\(Int(weather.wind.speed)) m/s")
+                                                    .font(.title2)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.white)
+                                            }
+                                            
+                                            VStack(alignment: .leading) {
+                                                Text("Feels Like")
+                                                    .font(.caption)
+                                                    .foregroundColor(.white.opacity(0.7))
+                                                Text("\(Int(weather.main.feelsLike))°")
+                                                    .font(.title2)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.white)
+                                            }
+                                            Spacer()
+                                        }
+                                        .padding()
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(RoundedRectangle(cornerRadius: 16))
                                         .padding(.horizontal, 24)
+
                                     }
-                                }
-                            }
-                            
-                            // MARK: - Details Grid
-                             VStack(alignment: .leading, spacing: 12) {
-                                Text("DETAILS")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(.white.opacity(0.7))
-                                    .padding(.horizontal, 24)
-                                
-                                HStack(spacing: 20) {
-                                    VStack(alignment: .leading) {
-                                        Text("Humidity")
-                                            .font(.caption)
-                                            .foregroundColor(.white.opacity(0.7))
-                                        Text("\(Int(weather.main.humidity))%")
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.white)
+
+                                     // MARK: - Weather Summary
+                                    InfoCard {
+                                        Text("Current conditions: \(weather.weather[0].description.capitalized). The pressure is \(Int(weather.main.pressure)) hPa.")
+                                            .foregroundColor(.white.opacity(0.9))
+                                            .font(.system(size: 16))
                                     }
                                     
-                                    VStack(alignment: .leading) {
-                                        Text("Wind")
-                                            .font(.caption)
-                                            .foregroundColor(.white.opacity(0.7))
-                                        Text("\(Int(weather.wind.speed)) m/s")
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.white)
-                                    }
-                                    
-                                    VStack(alignment: .leading) {
-                                        Text("Feels Like")
-                                            .font(.caption)
-                                            .foregroundColor(.white.opacity(0.7))
-                                        Text("\(Int(weather.main.feelsLike))°")
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.white)
-                                    }
-                                    Spacer()
-                                }
-                                .padding()
-                                .background(.ultraThinMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .padding(.horizontal, 24)
-
-                            }
-
-                             // MARK: - Weather Summary
-                            InfoCard {
-                                Text("Current conditions: \(weather.weather[0].description.capitalized). The pressure is \(Int(weather.main.pressure)) hPa.")
-                                    .foregroundColor(.white.opacity(0.9))
-                                    .font(.system(size: 16))
-                            }
-                            
-                        } else {
-                            if locationManager.isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                                    .padding(.top, 100)
-                            } else {
-                                Button("Enable Location to see weather") {
-                                    locationManager.requestLocation()
-                                }
-                                .padding(.top, 100)
-                                .foregroundColor(.white)
-                            }
-                        }
-                       
-                        
-                        // MARK: - Map Card
-                        InfoCard {
-                            VStack(spacing: 16) {
-                                Map(coordinateRegion: .constant(
-                                    MKCoordinateRegion(
-                                        center: weather?.coord != nil ? CLLocationCoordinate2D(latitude: weather!.coord.lat, longitude: weather!.coord.lon) : CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
-                                        span: MKCoordinateSpan(latitudeDelta: 0.3, longitudeDelta: 0.3)
-                                    )
-                                ))
-                                .frame(height: 140)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                
-                                Button {
-                                    // open precipitation map
-                                } label: {
-                                    Text("OPEN PRECIPITATION MAP")
-                                        .font(.system(size: 15, weight: .semibold))
+                                } else {
+                                    if locationManager.isLoading {
+                                        ProgressView()
+                                            .tint(.white)
+                                            .padding(.top, 100)
+                                    } else {
+                                        Button("Enable Location to see weather") {
+                                            locationManager.requestLocation()
+                                        }
+                                        .padding(.top, 100)
                                         .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 12)
-                                        .background(Color.blue)
-                                        .clipShape(Capsule())
+                                    }
                                 }
+                               
+                                
+                                // MARK: - Map Card
+                                InfoCard {
+                                    VStack(spacing: 16) {
+                                        Map(coordinateRegion: .constant(
+                                            MKCoordinateRegion(
+                                                center: weather?.coord != nil ? CLLocationCoordinate2D(latitude: weather!.coord.lat, longitude: weather!.coord.lon) : CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+                                                span: MKCoordinateSpan(latitudeDelta: 0.3, longitudeDelta: 0.3)
+                                            )
+                                        ))
+                                        .frame(height: 140)
+                                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                                        
+                                        Button {
+                                            // open precipitation map
+                                        } label: {
+                                            Text("OPEN PRECIPITATION MAP")
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 12)
+                                                .background(Color.blue)
+                                                .clipShape(Capsule())
+                                        }
+                                    }
+                                }
+                                
+                                Spacer(minLength: 80) // Space for bottom bar
                             }
                         }
-                        
-                        Spacer(minLength: 80) // Space for bottom bar
+                        .refreshable {
+                            locationManager.requestLocation()
+                        }
                     }
                 }
-                .refreshable {
-                    locationManager.requestLocation()
-                }
-                
-                // MARK: - Bottom Bar (Fixed)
+            } else {
+                // MARK: - Search / Favorites View
+                WeatherSearchView()
+            }
+            
+            // MARK: - Bottom Bar (Fixed)
+            VStack {
+                Spacer()
                 HStack {
-                    Image(systemName: "map")
+                    Button {
+                        withAnimation { selectedTab = 0 }
+                    } label: {
+                        Image(systemName: "map")
+                            .symbolVariant(selectedTab == 0 ? .fill : .none)
+                            .foregroundColor(selectedTab == 0 ? .white : .white.opacity(0.5))
+                    }
+                    
                     Spacer()
-                    Circle()
-                        .frame(width: 8, height: 8)
+                    
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(selectedTab == 0 ? .white : .white.opacity(0.3))
+                            .frame(width: 8, height: 8)
+                        Circle()
+                            .fill(selectedTab == 1 ? .white : .white.opacity(0.3))
+                            .frame(width: 8, height: 8)
+                    }
+                    
                     Spacer()
-                    Image(systemName: "list.bullet")
+                    
+                    Button {
+                        withAnimation { selectedTab = 1 }
+                    } label: {
+                        Image(systemName: "list.bullet")
+                            .symbolVariant(selectedTab == 1 ? .circle.fill : .none) // Approximate fill
+                            .foregroundColor(selectedTab == 1 ? .white : .white.opacity(0.5))
+                    }
                 }
                 .font(.system(size: 22))
-                .foregroundColor(.white.opacity(0.9))
-                .padding(.horizontal, 48)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 48) // Adjust spacing
                 .padding(.vertical, 16)
                 .background(.ultraThinMaterial)
                 .clipShape(Capsule())
@@ -224,12 +256,12 @@ struct WeatherHomeView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
-            .sheet(isPresented: $showProfile) {
-                ProfileView()
-            }
+        }
+        .sheet(isPresented: $showProfile) {
+            ProfileView()
         }
         .onAppear {
-             if weather == nil {
+             if weather == nil && selectedTab == 0 {
                  locationManager.requestLocation()
              }
         }

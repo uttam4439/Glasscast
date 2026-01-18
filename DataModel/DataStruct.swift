@@ -92,3 +92,45 @@ struct ForecastResponseBody: Decodable {
         }
     }
 }
+
+struct FavoriteLocation: Codable, Identifiable, Equatable {
+    var id: UUID = UUID()
+    var user_id: UUID
+    var city_name: String
+    var country: String
+    var lat: Double
+    var lon: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case user_id
+        case city_name
+        case country
+        case lat
+        case lon
+    }
+    
+    init(id: UUID = UUID(), user_id: UUID, city_name: String, country: String, lat: Double, lon: Double) {
+        self.id = id
+        self.user_id = user_id
+        self.city_name = city_name
+        self.country = country
+        self.lat = lat
+        self.lon = lon
+    }
+    
+    // Helper to map from GeoCity
+    var name: String { city_name }
+    var latitude: Double { lat }
+    var longitude: Double { lon }
+}
+
+struct GeoCity: Decodable, Identifiable {
+    let name: String
+    let lat: Double
+    let lon: Double
+    let country: String
+    let state: String?
+    
+    var id: String { "\(lat)-\(lon)" }
+}

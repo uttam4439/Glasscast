@@ -20,6 +20,9 @@ struct RootView: View {
         case .signup:
             SignupDetailsView()
 
+        case .signin:
+            SignInView()
+
         case .otp:
             OTPView(email: appState.signupEmail)
 

@@ -68,7 +68,7 @@ struct OnboardingView: View {
                 .padding(.bottom, 24)
 
                 Button {
-                    // Sign In Action
+                    appState.flow = .signin
                 } label: {
                     Text("Sign In")
                         .font(.system(size: 17, weight: .semibold))
